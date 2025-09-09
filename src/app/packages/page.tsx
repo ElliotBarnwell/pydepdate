@@ -1,11 +1,74 @@
+"use client";
 
+import { useState } from "react";
+import PyPIHistory from "./pypihistory";
+import { FaPlus, FaMinus } from 'react-icons/fa';
 
-export default function Packages() {
+export default function PyPIPage() {
+  const [submittedPkgs, setSubmittedPkgs] = useState<string[]>([""]);
+  const [packages, setPackages] = useState<string[]>([""]);
+  const [count, setCount] = useState(1)
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittedPkgs(packages.map(str => str.trim()));
+  };
+
+    // Update a package name at index i
+  const handleChange = (index: number, value: string) => {
+    const newPackages = [...packages];
+    newPackages[index] = value;
+    setPackages(newPackages);
+  };
+
+  // Add a form
+  const handleAdd = () => {
+    setCount(count + 1);
+    setPackages([...packages, ""]);
+  };
+
+  // Remove the last form
+  const handleRemove = () => {
+    if (count <= 1) return;
+    setCount(count - 1);
+    setPackages(packages.slice(0, -1));
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-        <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-            <h1>PYDEPDATE</h1>
-        </main>
-    </div>
-        );
+    <main className="p-6">
+      <h1 className="text-2xl font-bold mb-4">PyPI Package History Viewer</h1>
+      <form onSubmit={handleSubmit} className="mb-4 items-center space-x-2">
+        {packages.map((pkg,ind) => (
+          <div key={ind} className="flex items-center space-x-2">
+            <input
+              type="text"
+              value={pkg}
+              onChange={(e) => handleChange(ind, e.target.value)}
+              placeholder={`Package #${ind + 1}`}
+              className="border p-2 rounded flex-1"
+            />
+            </div>
+          ))}
+          <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              Show History
+            </button>
+      </form>
+      <button
+          type="button"
+          onClick={() => handleAdd()}
+      >
+          <FaPlus/>
+      </button>
+      <button
+          type="button"
+          onClick={() => handleRemove()}
+      >
+          <FaMinus/>
+      </button>
+      {submittedPkgs.map((pkg,ind) => (<PyPIHistory key={ind} packageName={pkg} />))}
+  
+    </main>
+  );
 }
