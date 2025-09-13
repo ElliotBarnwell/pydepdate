@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 
-type ReleaseHistory = {
+export type ReleaseHistory = {
+  name: string;
   version: string;
-  date: string;
+  date: Date;
 };
 
 async function fetchPackageHistory(packageName: string): Promise<ReleaseHistory[]> {
@@ -17,15 +18,15 @@ async function fetchPackageHistory(packageName: string): Promise<ReleaseHistory[
 
   for (const [version, files] of Object.entries(releases)) {
     if (files.length === 0) continue;
-    const uploadTime = files[0].upload_time_iso_8601;
-    history.push({ version, date: uploadTime });
+    const uploadTime = new Date(files[0].upload_time);
+    history.push({ name: packageName, version, date: uploadTime });
   }
 
   // sort by date
   return history.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
-export default function PyPIHistory({ packageName }: { packageName: string }) {
+export default function PyPIHistory({ packageName}: { packageName: string}) {
   const [history, setHistory] = useState<ReleaseHistory[]>([]);
   const [loading, setLoading] = useState(true);
 

@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PyPIHistory from "./pypihistory";
 import { FaPlus, FaMinus } from 'react-icons/fa';
+import Example from "./chart";
+import type {ReleaseHistory} from "./pypihistory";
 
 export default function PyPIPage() {
   const [submittedPkgs, setSubmittedPkgs] = useState<string[]>([""]);
   const [packages, setPackages] = useState<string[]>([""]);
   const [count, setCount] = useState(1)
+  const [history, setHistory] = useState<ReleaseHistory[]>([]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmittedPkgs(packages.map(str => str.trim()));
@@ -35,6 +39,7 @@ export default function PyPIPage() {
 
   return (
     <main className="p-6">
+      <Example data={history} />
       <h1 className="text-2xl font-bold mb-4">PyPI Package History Viewer</h1>
       <form onSubmit={handleSubmit} className="mb-4 items-center space-x-2">
         {packages.map((pkg,ind) => (
@@ -59,16 +64,17 @@ export default function PyPIPage() {
           type="button"
           onClick={() => handleAdd()}
       >
-          <FaPlus/>
+      <FaPlus/>
       </button>
       <button
           type="button"
           onClick={() => handleRemove()}
       >
-          <FaMinus/>
+      <FaMinus/>
       </button>
       {submittedPkgs.map((pkg,ind) => (<PyPIHistory key={ind} packageName={pkg} />))}
-  
     </main>
   );
 }
+
+
