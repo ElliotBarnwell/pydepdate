@@ -1,24 +1,71 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import PyPIHistory from "./pypihistory";
 import { FaPlus, FaMinus } from 'react-icons/fa';
 import Example from "./chart";
-import type {ReleaseHistory} from "./pypihistory";
+import {ReleaseHistory} from "./pypihistory";
 
 export default function PyPIPage() {
   const [submittedPkgs, setSubmittedPkgs] = useState<string[]>([""]);
   const [packages, setPackages] = useState<string[]>([""]);
   const [count, setCount] = useState(1)
   const [history, setHistory] = useState<ReleaseHistory[]>([]);
+  const [loading, setLoading] = useState(true);
+
+
+  function versionToNumber(version: string) {
+  // Example: "1.2.3" => 1.002003
+  const number_version = version.split(".").map(num => num.padStart(3, "0")).join("");
+  if (!version) return null;
+  return  Number(number_version);
+
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmittedPkgs(packages.map(str => str.trim()));
   };
 
+  useEffect(() => {
+  async function fetchHistories() {
+    setLoading(true);
+    try {
+      const results = await Promise.all(
+        submittedPkgs.map(async (pkg) => {
+          const res = await fetch(`https://pypi.org/pypi/${pkg}/json`);
+          const data = await res.json();
+
+          const releases: ReleaseHistory[] = Object.entries(data.releases).map(
+            ([version, releases]: [string, any]) => ({
+              name: pkg,
+              version_str: version,
+              version: versionToNumber(version),
+              date: releases?.[0]?.upload_time ?? "unknown",
+            })
+          );
+
+          console.log("release : ", releases);
+
+          return releases;
+        })
+      );
+      // Convert array to object { packageName: releases }
+      setHistory(results.flat());
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+    }
+    fetchHistories();
+  }, [submittedPkgs]);
+
+  if (loading) return <p>Loading…</p>;
+
     // Update a package name at index i
   const handleChange = (index: number, value: string) => {
+    console.log("Changing package at index", index, "to", value);
     const newPackages = [...packages];
     newPackages[index] = value;
     setPackages(newPackages);
@@ -36,6 +83,7 @@ export default function PyPIPage() {
     setCount(count - 1);
     setPackages(packages.slice(0, -1));
   };
+
 
   return (
     <main className="p-6">
@@ -72,9 +120,7 @@ export default function PyPIPage() {
       >
       <FaMinus/>
       </button>
-      {submittedPkgs.map((pkg,ind) => (<PyPIHistory key={ind} packageName={pkg} />))}
+      {/* {submittedPkgs.map((pkg,ind) => (<PyPIHistory key={ind} packageName={pkg} />))} */}
     </main>
   );
 }
-
-
