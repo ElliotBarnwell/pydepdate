@@ -24,11 +24,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-    <head>
-      <link rel="icon" href="/python.jpeg" type="image/jpeg" />
-      <meta property="og:image" content="/python.jpeg" />
-      <meta name="twitter:image" content="/python.jpeg" />
-    </head>
+      <head>
+        <link rel="icon" href="/python.jpeg" type="image/jpeg" />
+        <meta property="og:image" content="/python.jpeg" />
+        <meta name="twitter:image" content="/python.jpeg" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

@@ -16,11 +16,12 @@ export default function PyPIPage() {
   const [count, setCount] = useState(1);
   const [history, setHistory] = useState<Record<string, ReleaseHistory[]>>({});
   const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState<Date | null>(new Date("2000-01-01"));
+  const [startDate, setStartDate] = useState<Date | null>(
+    new Date("2000-01-01"),
+  );
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [useDatePicker, setUseDatePicker] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +44,8 @@ export default function PyPIPage() {
             }
             const releases: ReleaseHistory[] = Object.entries(
               data.releases,
-            ).map(([version, releases]: [string, any]) => ({  // eslint-disable-line @typescript-eslint/no-explicit-any
+            ).map(([version, releases]: [string, any]) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
+              
               version: version,
               date: releases?.[0]?.upload_time ?? "unknown",
             }));
@@ -88,13 +90,17 @@ export default function PyPIPage() {
 
   return (
     <main className="p-6">
-
       {error && (
-        <div className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+        <div
+          className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
+          role="alert"
+        >
           <span className="font-medium">Error!</span> {error}
         </div>
       )}
-      <h1 className="text-5xl font-bold mb-4 p-5">PyPI Package History Viewer</h1>
+      <h1 className="text-5xl font-bold mb-4 p-5">
+        PyPI Package History Viewer
+      </h1>
       <form onSubmit={handleSubmit} className="mb-4 items-center space-x-2">
         <label className="inline-flex items-center cursor-pointer p-5">
           <input
@@ -109,7 +115,7 @@ export default function PyPIPage() {
             Use Date Picker
           </span>
         </label>
-        <br/>
+        <br />
         {useDatePicker && (
           <div
             id="date-range-picker"
@@ -136,7 +142,9 @@ export default function PyPIPage() {
                 placeholder="Select date start"
                 value={startDate ? startDate.toISOString().split("T")[0] : ""}
                 onChange={(e) => {
-                  setStartDate(e.target.value ? new Date(e.target.value) : null);
+                  setStartDate(
+                    e.target.value ? new Date(e.target.value) : null,
+                  );
                 }}
               />
             </div>
@@ -181,20 +189,19 @@ export default function PyPIPage() {
         ))}
 
         <div className="flex items-center space-x-2 p-5">
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-        >
-          Show History
-        </button>
-        <button type="button" className="p-2" onClick={() => handleAdd()}>
-          <FaPlus />
-        </button>
-        <button type="button" className="p-2" onClick={() => handleRemove()}>
-          <FaMinus />
-        </button>
-
-                </div>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded"
+          >
+            Show History
+          </button>
+          <button type="button" className="p-2" onClick={() => handleAdd()}>
+            <FaPlus />
+          </button>
+          <button type="button" className="p-2" onClick={() => handleRemove()}>
+            <FaMinus />
+          </button>
+        </div>
       </form>
 
       <ReleaseTable

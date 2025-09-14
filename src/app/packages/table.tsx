@@ -16,43 +16,49 @@ export default function ReleaseTable({
   const [packages, setPackages] = useState<string[]>(Object.keys(releases));
   const [allDates, setAllDates] = useState<string[]>([]);
 
+  const displayRelease = useCallback(
+    (release: ReleaseHistory) => {
+      const releaseDate = new Date(release.date);
+      if (startDate && releaseDate < startDate) return false;
+      if (endDate && releaseDate > endDate) return false;
+      if (!isValidDateString(release.date)) return false;
+      return true;
+    },
+    [startDate, endDate],
+  );
 
-    const displayRelease = useCallback((release: ReleaseHistory) => {
-    const releaseDate = new Date(release.date);
-    if (startDate && releaseDate < startDate) return false;
-    if (endDate && releaseDate > endDate) return false;
-    if (!isValidDateString(release.date)) return false;
-    return true;
-  }, [startDate, endDate]);
+  const filterAllReleasesByDate = useCallback(
+    (releases: Record<string, ReleaseHistory[]>) => {
+      const filtered: Record<string, ReleaseHistory[]> = {};
+      if (!startDate && !endDate) {
+        return releases;
+      }
+      for (const [pkg, releaseList] of Object.entries(releases)) {
+        filtered[pkg] = releaseList.filter((release) => {
+          return displayRelease(release);
+        });
+      }
+      return filtered;
+    },
+    [displayRelease, startDate, endDate],
+  );
 
-  const filterAllReleasesByDate = useCallback((releases: Record<string, ReleaseHistory[]>) => {
-    const filtered: Record<string, ReleaseHistory[]> = {};
-    if (!startDate && !endDate) {
-      return releases;
-    }
-    for (const [pkg, releaseList] of Object.entries(releases)) {
-      filtered[pkg] = releaseList.filter((release) => {
-        return displayRelease(release);
+  const getAllReleaseDates = useCallback(
+    (releases: Record<string, ReleaseHistory[]>) => {
+      const dateSet = new Set<string>();
+      Object.values(releases).forEach((releaseList) => {
+        releaseList.forEach((release) => {
+          if (displayRelease(release)) {
+            dateSet.add(release.date);
+          }
+        });
       });
-    }
-    return filtered;
-}, [displayRelease, startDate, endDate]);
-
-    const getAllReleaseDates = useCallback((
-    releases: Record<string, ReleaseHistory[]>
-  ) => {
-    const dateSet = new Set<string>();
-    Object.values(releases).forEach((releaseList) => {
-      releaseList.forEach((release) => {
-        if (displayRelease(release)) {
-          dateSet.add(release.date);
-        }
-      });
-    });
-    return Array.from(dateSet).sort(
-      (a, b) => new Date(a).getTime() - new Date(b).getTime(),
-    );
-  }, [displayRelease]);
+      return Array.from(dateSet).sort(
+        (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+      );
+    },
+    [displayRelease],
+  );
 
   useEffect(() => {
     setPackages(Object.keys(releases));
@@ -65,8 +71,6 @@ export default function ReleaseTable({
     const date = new Date(str);
     return !isNaN(date.getTime());
   }
-
-
 
   function generateTableRows() {
     return allDates.map((date) => (
