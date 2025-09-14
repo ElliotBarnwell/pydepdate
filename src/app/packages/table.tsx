@@ -1,76 +1,116 @@
-import { useState } from "react";
-import { ReleaseHistory } from "./pypihistory";
+import { useEffect, useState } from "react";
+import { ReleaseHistory } from "../page";
+import { format, parseISO } from "date-fns";
 
-export default function ReleaseTable() {
-  function filterReleasesByDate(
-    releases: ReleaseHistory[],
-    startDate: Date | null,
-    endDate: Date | null,
-  ): ReleaseHistory[] {
-    if (!startDate && !endDate) return releases;
-    return releases.filter((release) => {
-      const releaseDate = new Date(release.date);
-      if (startDate && releaseDate < startDate) return false;
-      if (endDate && releaseDate > endDate) return false;
-      return true;
+export default function ReleaseTable({
+  releases,
+  startDate,
+  endDate,
+  useDatePicker
+}: {
+  releases: { [key: string]: ReleaseHistory[] };
+  startDate: Date;
+  endDate: Date;
+  useDatePicker: boolean;
+}) {
+  const [filteredReleases, setFilteredReleases] = useState<
+    Record<string, ReleaseHistory[]>
+  >({});
+  const [packages, setPackages] = useState<string[]>(Object.keys(releases));
+  const [allDates, setAllDates] = useState<string[]>([]);
+
+  useEffect(() => {
+    setPackages(Object.keys(releases));
+    setFilteredReleases(filterAllReleasesByDate(releases,useDatePicker));
+    // get dates for date column
+    setAllDates(getAllReleaseDates(releases));
+  }, [releases]);
+
+  function isValidDateString(str: string): boolean {
+    const date = new Date(str);
+    return !isNaN(date.getTime());
+  }
+
+  function getAllReleaseDates(
+    releases: Record<string, ReleaseHistory[]>,
+  ): string[] {
+    const dateSet = new Set<string>();
+    Object.values(releases).forEach((releaseList) => {
+      releaseList.forEach((release) => {
+        if (displayRelease(release)) {
+          dateSet.add(release.date);
+        }
+      });
     });
+    return Array.from(dateSet).sort(
+      (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+    );
+  }
+
+  function filterAllReleasesByDate(
+    releases: Record<string, ReleaseHistory[]>,
+    useDatePicker: boolean,
+  ): Record<string, ReleaseHistory[]> {
+    const filtered: Record<string, ReleaseHistory[]> = {};
+    if (useDatePicker) return releases;
+    for (const [pkg, releaseList] of Object.entries(releases)) {
+      filtered[pkg] = releaseList.filter((release) => {
+        return displayRelease(release);
+      });
+    }
+    return filtered;
+  }
+
+  function displayRelease(release: ReleaseHistory): boolean {
+    const releaseDate = new Date(release.date);
+    if (startDate && releaseDate < startDate) return false;
+    if (endDate && releaseDate > endDate) return false;
+    if (!isValidDateString(release.date)) return false;
+    return true;
+  }
+
+  function generateTableRows() {
+    return allDates.map((date) => (
+      <tr
+        key={date}
+        className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200"
+      >
+        <th
+          scope="row"
+          className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+        >
+          {new Date(date).toLocaleDateString("en-GB")}
+        </th>
+        {packages.map((pkg) => {
+          const release = filteredReleases[pkg]?.find((r) => r.date === date);
+          return (
+            <td key={pkg} className="px-6 py-4">
+              {release ? release.version : "-"}
+            </td>
+          );
+        })}
+      </tr>
+    ));
   }
 
   return (
-    <div className="relative overflow-x-auto">
+    <div className="relative overflow-x-auto px-5">
       <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
             <th scope="col" className="px-6 py-3">
-              Product name
+              Release Date (DD/MM/YYYY)
             </th>
-            <th scope="col" className="px-6 py-3">
-              Color
-            </th>
-            <th scope="col" className="px-6 py-3">
-              Category
-            </th>
-            <th scope="col" className="px-6 py-3">
-              Price
-            </th>
+            {packages.map((pkg) => (
+              <th scope="col" className="px-6 py-3" key={pkg}>
+                {pkg}
+              </th>
+            ))}
           </tr>
         </thead>
-        <tbody>
-          <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-            <th
-              scope="row"
-              className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-            >
-              Apple MacBook Pro 17"
-            </th>
-            <td className="px-6 py-4">Silver</td>
-            <td className="px-6 py-4">Laptop</td>
-            <td className="px-6 py-4">$2999</td>
-          </tr>
-          <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-            <th
-              scope="row"
-              className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-            >
-              Microsoft Surface Pro
-            </th>
-            <td className="px-6 py-4">White</td>
-            <td className="px-6 py-4">Laptop PC</td>
-            <td className="px-6 py-4">$1999</td>
-          </tr>
-          <tr className="bg-white dark:bg-gray-800">
-            <th
-              scope="row"
-              className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-            >
-              Magic Mouse 2
-            </th>
-            <td className="px-6 py-4">Black</td>
-            <td className="px-6 py-4">Accessories</td>
-            <td className="px-6 py-4">$99</td>
-          </tr>
-        </tbody>
+        <tbody>{generateTableRows()}</tbody>
       </table>
+      <div></div>
     </div>
   );
 }
