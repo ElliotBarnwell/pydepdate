@@ -1,13 +1,16 @@
 {
   "name": "pydepdate",
   "version": "0.1.0",
+  "homepage": "https://elliotbarnwell.github.io/pydepdate",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "format": "prettier --write 'src/**/*.{ts,tsx}'"
+    "format": "prettier --write 'src/**/*.{ts,tsx}'",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "date-fns": "^4.1.0",
