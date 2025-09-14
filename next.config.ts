@@ -1,12 +1,11 @@
-import type { NextConfig } from "next";
-
-const isProd = process.env.NODE_ENV === "production";
-
-const nextConfig: NextConfig = {
-  output: "export",
-  basePath: isProd ? "/pydepdate" : "",
-  assetPrefix: isProd ? "/pydepdate/" : "",
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true, // optional, recommended
+  output: undefined,     // do NOT use 'export' — keep it dynamic
+  // basePath and assetPrefix not needed for Vercel
+  experimental: {
+    turboMode: true, // optional: enables Turbopack in dev
+  },
 };
 
-
-export default nextConfig;
+module.exports = nextConfig;
