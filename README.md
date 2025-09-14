@@ -1,5 +1,3 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
 ## Intro
 
 Dealing with package management in Python can be a headache. Pip is garbage compared to other package managers and thanks to tools like UV the ecosystem is improving.
