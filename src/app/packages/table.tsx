@@ -1,17 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ReleaseHistory } from "../page";
-import { format, parseISO } from "date-fns";
 
 export default function ReleaseTable({
   releases,
   startDate,
   endDate,
-  useDatePicker
 }: {
   releases: { [key: string]: ReleaseHistory[] };
-  startDate: Date;
-  endDate: Date;
-  useDatePicker: boolean;
+  startDate: Date | null;
+  endDate: Date | null;
 }) {
   const [filteredReleases, setFilteredReleases] = useState<
     Record<string, ReleaseHistory[]>
@@ -21,7 +18,7 @@ export default function ReleaseTable({
 
   useEffect(() => {
     setPackages(Object.keys(releases));
-    setFilteredReleases(filterAllReleasesByDate(releases,useDatePicker));
+    setFilteredReleases(filterAllReleasesByDate(releases));
     // get dates for date column
     setAllDates(getAllReleaseDates(releases));
   }, [releases]);
@@ -31,9 +28,25 @@ export default function ReleaseTable({
     return !isNaN(date.getTime());
   }
 
-  function getAllReleaseDates(
-    releases: Record<string, ReleaseHistory[]>,
-  ): string[] {
+//   function getAllReleaseDates(
+//     releases: Record<string, ReleaseHistory[]>,
+//   ): string[] {
+//     const dateSet = new Set<string>();
+//     Object.values(releases).forEach((releaseList) => {
+//       releaseList.forEach((release) => {
+//         if (displayRelease(release)) {
+//           dateSet.add(release.date);
+//         }
+//       });
+//     });
+//     return Array.from(dateSet).sort(
+//       (a, b) => new Date(a).getTime() - new Date(b).getTime(),
+//     );
+//   }
+
+    const getAllReleaseDates = useCallback((
+    releases: Record<string, ReleaseHistory[]>
+  ) => {
     const dateSet = new Set<string>();
     Object.values(releases).forEach((releaseList) => {
       releaseList.forEach((release) => {
@@ -45,21 +58,32 @@ export default function ReleaseTable({
     return Array.from(dateSet).sort(
       (a, b) => new Date(a).getTime() - new Date(b).getTime(),
     );
-  }
+  }, []);
 
-  function filterAllReleasesByDate(
-    releases: Record<string, ReleaseHistory[]>,
-    useDatePicker: boolean,
-  ): Record<string, ReleaseHistory[]> {
+  const filterAllReleasesByDate = useCallback((releases: Record<string, ReleaseHistory[]>) => {
     const filtered: Record<string, ReleaseHistory[]> = {};
-    if (useDatePicker) return releases;
+    if (!startDate && !endDate) {
+      return releases;
+    }
     for (const [pkg, releaseList] of Object.entries(releases)) {
       filtered[pkg] = releaseList.filter((release) => {
         return displayRelease(release);
       });
     }
     return filtered;
-  }
+}, []);
+
+//   function filterAllReleasesByDate1(
+//     releases: Record<string, ReleaseHistory[]>,
+//   ): Record<string, ReleaseHistory[]> {
+//     const filtered: Record<string, ReleaseHistory[]> = {};
+//     for (const [pkg, releaseList] of Object.entries(releases)) {
+//       filtered[pkg] = releaseList.filter((release) => {
+//         return displayRelease(release);
+//       });
+//     }
+//     return filtered;
+//   }
 
   function displayRelease(release: ReleaseHistory): boolean {
     const releaseDate = new Date(release.date);

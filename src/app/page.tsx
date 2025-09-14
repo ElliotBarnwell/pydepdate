@@ -16,8 +16,8 @@ export default function PyPIPage() {
   const [count, setCount] = useState(1);
   const [history, setHistory] = useState<Record<string, ReleaseHistory[]>>({});
   const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState<Date>(new Date("2000-01-01"));
-  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [startDate, setStartDate] = useState<Date | null>(new Date("2000-01-01"));
+  const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [useDatePicker, setUseDatePicker] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -28,16 +28,6 @@ export default function PyPIPage() {
   };
 
   useEffect(() => {
-    async function checkDatePicker() {
-      if (startDate > endDate) {
-        setError("Start date must be before end date.");
-        setUseDatePicker(false);
-      }
-      else {
-        setError(null);
-      }
-    }
-
     async function fetchHistories() {
       setLoading(true);
       setError(null);
@@ -141,11 +131,13 @@ export default function PyPIPage() {
               <input
                 id="datepicker-range-start"
                 name="start"
-                type="text"
+                type="date"
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="Select date start"
-                value={startDate.toISOString().slice(0, 10)}
-                onChange={e => setStartDate(new Date(e.target.value))}
+                value={startDate ? startDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => {
+                  setStartDate(e.target.value ? new Date(e.target.value) : null);
+                }}
               />
             </div>
             <span className="mx-4 text-gray-500">to</span>
@@ -164,11 +156,13 @@ export default function PyPIPage() {
               <input
                 id="datepicker-range-end"
                 name="end"
-                type="text"
+                type="date"
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="Select date end"
-                value={endDate.toISOString().slice(0, 10)}
-                onChange={e => setEndDate(new Date(e.target.value))}
+                value={endDate ? endDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => {
+                  setEndDate(e.target.value ? new Date(e.target.value) : null);
+                }}
               />
             </div>
           </div>
@@ -207,8 +201,8 @@ export default function PyPIPage() {
         releases={history}
         startDate={startDate}
         endDate={endDate}
-        useDatePicker={useDatePicker}
       />
     </main>
   );
 }
+//                //value={endDate ? endDate.toISOString().split("T")[0] : ""}
