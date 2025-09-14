@@ -43,7 +43,7 @@ export default function PyPIPage() {
             }
             const releases: ReleaseHistory[] = Object.entries(
               data.releases,
-            ).map(([version, releases]: [string, any]) => ({
+            ).map(([version, releases]: [string, any]) => ({  // eslint-disable-line @typescript-eslint/no-explicit-any
               version: version,
               date: releases?.[0]?.upload_time ?? "unknown",
             }));
