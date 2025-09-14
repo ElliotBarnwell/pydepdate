@@ -1,13 +1,13 @@
 self.__BUILD_MANIFEST = {
   "/_error": [
-    "./static/chunks/d3cdaa1c1b027727.js"
+    "./static/chunks/9bfc8a8d8fc0a9ec.js"
   ],
   "__rewrites": {
     "afterFiles": [],
     "beforeFiles": [
       {
-        "source": "/repo-name//_next/:path+",
-        "destination": "/repo-name/_next/:path+"
+        "source": "/pydepdate//_next/:path+",
+        "destination": "/pydepdate/_next/:path+"
       }
     ],
     "fallback": []
