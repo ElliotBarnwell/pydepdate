@@ -9,7 +9,9 @@ export type ReleaseHistory = {
   date: Date;
 };
 
-export async function fetchPackageHistory(packageName: string): Promise<ReleaseHistory[]> {
+export async function fetchPackageHistory(
+  packageName: string,
+): Promise<ReleaseHistory[]> {
   const res = await fetch(`https://pypi.org/pypi/${packageName}/json`);
   if (!res.ok) throw new Error("Failed to fetch package data");
   const data = await res.json();
@@ -20,10 +22,16 @@ export async function fetchPackageHistory(packageName: string): Promise<ReleaseH
   for (const [version, files] of Object.entries(releases)) {
     if (files.length === 0) continue;
     const uploadTime = new Date(files[0].upload_time);
-    history.push({ name: packageName, version_str: version, version: Number(version), date: uploadTime });
+    history.push({
+      name: packageName,
+      version_str: version,
+      version: Number(version),
+      date: uploadTime,
+    });
   }
 
   // sort by date
-  return history.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  return history.sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  );
 }
-

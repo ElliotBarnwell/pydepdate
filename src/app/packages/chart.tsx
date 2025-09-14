@@ -1,41 +1,64 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import type { ReleaseHistory } from "./pypihistory";
 import { format, parseISO } from "date-fns";
 
 export default function Example({ data }: { data: ReleaseHistory[] }) {
   // Group releases by package name
-  const grouped = data.reduce<Record<string, ReleaseHistory[]>>((acc, release) => {
-    acc[release.name] = acc[release.name] || [];
-    acc[release.name].push(release);
-    return acc;
-  }, {});
+  const grouped = data.reduce<Record<string, ReleaseHistory[]>>(
+    (acc, release) => {
+      acc[release.name] = acc[release.name] || [];
+      acc[release.name].push(release);
+      return acc;
+    },
+    {},
+  );
 
   // Helper to generate a random color
   function randomColor() {
-    return "#" + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0");
+    return (
+      "#" +
+      Math.floor(Math.random() * 0xffffff)
+        .toString(16)
+        .padStart(6, "0")
+    );
   }
   // Get all unique dates, sorted
-  const allDates = Array.from(
-    new Set(data.map(r => r.date))
-  ).sort();
+  const allDates = Array.from(new Set(data.map((r) => r.date))).sort();
 
   // Build chart data: one object per date, with each package as a key
-  const chartData = allDates.map(date => {
+  const chartData = allDates.map((date) => {
     const entry: Record<string, any> = { date };
     for (const pkg in grouped) {
-      const release = grouped[pkg].find(r => r.date === date);
+      const release = grouped[pkg].find((r) => r.date === date);
       entry[pkg] = release ? release.version : null;
     }
     return entry;
   });
 
-// Assign a random color to each package (memoized for stable colors)
+  // Assign a random color to each package (memoized for stable colors)
   const colorMap = Object.fromEntries(
-    Object.keys(grouped).map(pkg => [pkg, randomColor()])
+    Object.keys(grouped).map((pkg) => [pkg, randomColor()]),
   );
 
   return (
-    <div style={{ backgroundColor: "white", padding: "1rem", borderRadius: "8px", width: "100%", height: 300 }}>
+    <div
+      style={{
+        backgroundColor: "white",
+        padding: "1rem",
+        borderRadius: "8px",
+        width: "100%",
+        height: 300,
+      }}
+    >
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={chartData}
@@ -49,7 +72,7 @@ export default function Example({ data }: { data: ReleaseHistory[] }) {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
-            tickFormatter={str => {
+            tickFormatter={(str) => {
               try {
                 return format(parseISO(str), "yyyy-MM-dd");
               } catch {
@@ -60,7 +83,7 @@ export default function Example({ data }: { data: ReleaseHistory[] }) {
           <YAxis />
           <Tooltip />
           <Legend />
-          {Object.keys(grouped).map(pkg => (
+          {Object.keys(grouped).map((pkg) => (
             <Line
               key={pkg}
               type="monotone"
